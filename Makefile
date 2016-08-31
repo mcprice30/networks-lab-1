@@ -1,5 +1,4 @@
 CC=gcc
-PWD=$(pwd)
 GPATH=$(GOPATH)
 SETPATH=GOPATH=$(GPATH):$(shell pwd)
 GO=$(SETPATH) go build
@@ -9,8 +8,6 @@ OBJ=obj
 BUILD=build
 SHARED=shared
 SRC=src
-SHARED_SOURCES = $(shell find $(SRC)/$(SHARED) -name '*.c')
-SHARED_OBJECTS = $(SHARED_SOURCES:%.c=%.o)
 
 all: tcp udp
 	@echo "Done building all components"
@@ -19,7 +16,7 @@ setup:
 	@mkdir -p $(BUILD) $(OBJ)/$(SHARED); \
 
 clean: setup
-	@rm -f $(OBJ)/* $(BUILD)/*; \
+	@rm -f $(OBJ)/*.o $(OBJ)/$(SHARED)/*.o $(BUILD)/*; \
 	echo "Done with cleanup"
 
 tcp: tcp_server tcp_client tcp_util
