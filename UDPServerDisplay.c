@@ -122,7 +122,7 @@ while (currentByte < length){
   printf("%3d: ", currentByte);
   column =0;
   while ((currentByte < length) && (column < 10)){
-    printf("%2x ",Buffer[currentByte]);
+    printf("%02x ",Buffer[currentByte] & 0xff);
     column++;
     currentByte++;
   }
