@@ -13,8 +13,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include "shared/types.h"
-#include "shared/io.h"
+#include "shared/c/types.h"
+#include "shared/c/io.h"
 
 
 int main(int argc, char *argv[])

@@ -1,5 +1,5 @@
-#include "shared/types.h"
-#include "shared/io.h"
+#include "shared/c/types.h"
+#include "shared/c/io.h"
 
 bool isLittleEndian() {
   short a = 1;

@@ -1,4 +1,9 @@
 CC=gcc
+PWD=$(pwd)
+GPATH=$(GOPATH)
+SETPATH=GOPATH=$(GPATH):$(shell pwd)
+GO=$(SETPATH) go build
+GOFLAGS=
 CFLAGS=-Wall -Isrc/
 OBJ=obj
 BUILD=build
@@ -28,15 +33,15 @@ util: tcp_util udp_util
 
 
 shared: src/$(SHARED)/* setup 
-	$(CC) $(CFLAGS) -c src/shared/io.c -o $(OBJ)/$(SHARED)/io.o; \
-	$(CC) $(CFLAGS) -c src/shared/types.c -o $(OBJ)/$(SHARED)/types.o; \
+	$(CC) $(CFLAGS) -c src/shared/c/io.c -o $(OBJ)/$(SHARED)/io.o; \
+	$(CC) $(CFLAGS) -c src/shared/c/types.c -o $(OBJ)/$(SHARED)/types.o; \
 	echo "Done building shared files"
 
 tcp_server: src/tcp/server/* setup
 	$(CC) $(CFLAGS) src/tcp/server/*.c -o $(BUILD)/TCP_server
 
 tcp_client: src/tcp/client/* setup
-	$(CC) $(CFLAGS) src/tcp/client/*.c -o $(BUILD)/TCP_client
+	$(GO) $(GOFLAGS) -o $(BUILD)/TCP_client tcp/client
 
 tcp_util: src/util/TCPServerDisplay.c setup
 	$(CC) $(CFLAGS) src/util/TCPServerDisplay.c -o $(BUILD)/TCP_diagnose

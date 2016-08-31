@@ -2,7 +2,7 @@
 ** talker.c -- a datagram "client" demo
 */
 
-#include "shared/io.h"
+#include "shared/c/io.h"
 
 void readSanitized(const char *promptString, void *readInto, int numBytes) {
 
