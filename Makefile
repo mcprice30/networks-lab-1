@@ -44,7 +44,7 @@ tcp_util: src/util/TCPServerDisplay.c setup
 	@$(CC) $(CFLAGS) src/util/TCPServerDisplay.c -o $(BUILD)/TCP_diagnose
 
 udp_server: src/udp/server/* setup
-	@$(CC) $(CFLAGS) src/udp/server/*.c -o $(BUILD)/UDP_server
+	@$(GO) $(GOFLAGS) -o $(BUILD)/UDP_server udp/server
 
 udp_client_base: src/udp/client/* setup
 	@$(CC) $(CFLAGS) -c src/udp/client/*.c -o $(OBJ)/udp_client.o
