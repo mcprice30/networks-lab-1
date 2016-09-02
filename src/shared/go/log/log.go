@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 )
 
 type LogLevel int
@@ -27,6 +28,7 @@ var levelMap map[string]LogLevel = map[string]LogLevel {
 var MaxMessageSize = 250
 
 var level LogLevel = ERROR
+const fmtStr string = "01-02-2006 15:04:05"
 
 func Level(lvlStr string) error {
 	lvl, exists := levelMap[lvlStr]
@@ -50,7 +52,8 @@ func GetLevel() LogLevel {
 
 func Trace(str string, elems ... interface{}) {
 	if level <= TRACE {
-		s := fmt.Sprintf(str + "\n", elems...)
+		logPrefix := fmt.Sprintf("[TRACE %s] ", time.Now().Format(fmtStr))
+		s := fmt.Sprintf(logPrefix + str + "\n", elems...)
 		if len(s) < MaxMessageSize {
 			fmt.Print(s)
 		} else {
@@ -61,7 +64,8 @@ func Trace(str string, elems ... interface{}) {
 
 func Info(str string, elems ... interface{}) {
 	if level <= INFO {
-		s := fmt.Sprintf(str + "\n", elems...)
+		logPrefix := fmt.Sprintf("[INFO %s]  ", time.Now().Format(fmtStr))
+		s := fmt.Sprintf(logPrefix + str + "\n", elems...)
 		if len(s) < MaxMessageSize {
 			fmt.Print(s)
 		} else {
@@ -72,7 +76,8 @@ func Info(str string, elems ... interface{}) {
 
 func Warn(str string, elems ... interface{}) {
 	if level <= WARN {
-		s := fmt.Sprintf(str + "\n", elems...)
+		logPrefix := fmt.Sprintf("[WARN %s]  ", time.Now().Format(fmtStr))
+		s := fmt.Sprintf(logPrefix + str + "\n", elems...)
 		if len(s) < MaxMessageSize {
 			fmt.Fprint(os.Stderr, s)
 		} else {
@@ -83,7 +88,8 @@ func Warn(str string, elems ... interface{}) {
 
 func Error(str string, elems ... interface{}) {
 	if level <= ERROR {
-		s := fmt.Sprintf(str + "\n", elems...)
+		logPrefix := fmt.Sprintf("[ERROR %s] ", time.Now().Format(fmtStr))
+		s := fmt.Sprintf(logPrefix + str + "\n", elems...)
 		if len(s) < MaxMessageSize {
 			fmt.Fprint(os.Stderr, s)
 		} else {
@@ -94,7 +100,8 @@ func Error(str string, elems ... interface{}) {
 
 func Fatal(str string, elems ... interface{}) {
 	if level <= FATAL {
-		s := fmt.Sprintf(str + "\n", elems...)
+		logPrefix := fmt.Sprintf("[FATAL %s] ", time.Now().Format(fmtStr))
+		s := fmt.Sprintf(logPrefix + str + "\n", elems...)
 		if len(s) < MaxMessageSize {
 			fmt.Fprint(os.Stderr, s)
 		} else {
