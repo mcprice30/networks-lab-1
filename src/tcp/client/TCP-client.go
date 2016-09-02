@@ -30,7 +30,7 @@ func main() {
 		log.Fatal("Error: %s", err)
 	}
 
-	reqNum := byte(0)
+	reqNum := types.RequestID(0)
 	for {
 		reqBytes := types.BuildRequest(reqNum).ToBytes()
 		reqNum++

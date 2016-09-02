@@ -7,11 +7,20 @@ import (
 )
 
 type Result int32
+type ErrorCode byte
+
+
+const (
+	ErrorCodeError ErrorCode = 127
+	ErrorCodeNoError ErrorCode = 0
+	ResponseTML	TML = 7
+)
+
 
 type CalculationResponse struct {
-	TML byte
-	RequestID byte
-	ErrorCode byte
+	TML TML
+	RequestID RequestID
+	ErrorCode ErrorCode
 	Result 	Result 
 }
 
@@ -37,28 +46,36 @@ func CalcResponseFromBytes(in []byte) (*CalculationResponse, error) {
 	}
 
 	return &CalculationResponse{
-		TML: in[0],
-		RequestID: in[1],
-		ErrorCode: in[2],
+		TML: TML(in[0]),
+		RequestID: RequestID(in[1]),
+		ErrorCode: ErrorCode(in[2]),
 		Result: result,
 	}, nil
 }
 
-func (req *CalculationResponse) ToBytes() []byte {
-	out := make([]byte, 0, int(req.TML))
-	out = append(out, req.TML)
-	out = append(out, req.RequestID)
-	out = append(out, req.ErrorCode)
-	out = append(out, result_toBytes(req.Result)...)
+func (resp *CalculationResponse) ToBytes() []byte {
+	out := make([]byte, 0, int(resp.TML))
+	out = append(out, byte(resp.TML))
+	out = append(out, byte(resp.RequestID))
+	out = append(out, byte(resp.ErrorCode))
+	out = append(out, result_toBytes(resp.Result)...)
 	log.Trace("Request bytes: %+v", out)
 	return out
 }
 
-func BuildResponse(reqID byte, result Result) *CalculationResponse {
+func BuildResponse(reqID RequestID, result Result) *CalculationResponse {
 	return &CalculationResponse{
-		TML: 7,
+		TML: ResponseTML,
 		RequestID: reqID,
-		ErrorCode: 0,
+		ErrorCode: ErrorCodeNoError,
 		Result: result,
 	}	
+}
+
+func ErrResponse(reqID RequestID) *CalculationResponse {
+	return &CalculationResponse {
+		TML: ResponseTML,
+		RequestID: reqID,
+		ErrorCode: ErrorCodeError,
+	}
 }

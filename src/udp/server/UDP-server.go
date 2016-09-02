@@ -3,23 +3,14 @@ package main
 import (
 		"fmt"
 		"net"
-		"shared/go/network"
+//		"shared/go/network"
 		"shared/go/types"
+//		"shared/go/log"
 )
 
 const Port string = "10010"
 
 func main() {
-		fmt.Println("Server Here!")	
-
-		addr, err := network.GetLocalAddress()
-
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		fmt.Printf("ADDRESS: %+v\n", addr)
 
 		serverAddr, err := net.ResolveUDPAddr("udp", ":10010")
 		if err != nil {
