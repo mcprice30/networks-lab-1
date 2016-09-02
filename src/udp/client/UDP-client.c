@@ -17,12 +17,17 @@
 #include "shared/c/io.h"
 
 
+#define MAXBUFLEN 100
+
 int main(int argc, char *argv[])
 {
 	int sockfd;
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
 	int numbytes;
+	char buf[MAXBUFLEN];
+	struct sockaddr_storage their_addr;
+	socklen_t addr_len;
 
 	if (argc != 3) {
 		fprintf(stderr,"usage: %s hostname port\n", argv[0]);
@@ -67,6 +72,25 @@ int main(int argc, char *argv[])
           exit(1);
       }
 
+	  addr_len = sizeof their_addr;
+
+	  if ((numbytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,
+		(struct sockaddr *) &their_addr, &addr_len)) == -1) {
+		perror("recvfrom");
+		exit(1);
+	  }
+      char tml = buf[0];
+      char i;
+
+      for (i = (char)0; i < tml; i++) {
+        printf("0x%02x\n", buf[(int)i]);
+      }
+
+      calcresponse_t response = calcresponseFromBytes(buf, (int) tml);
+      printf("Request #%d: %d\n", response.RequestID, response.Result);
+
+
+	  //printf("listener: packet contains \"%s\"\n", buf);
     }
 
 	freeaddrinfo(servinfo);

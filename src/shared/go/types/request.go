@@ -8,24 +8,26 @@ import (
 	"shared/go/log"
 )
 
+type Operand int16
+
 type CalculationRequest struct {
 	TML byte
 	RequestID byte
 	OpCode byte
 	NumOperands byte
-	Operand1 uint16
-	Operand2 uint16
+	Operand1 Operand
+	Operand2 Operand
 }
 
-func uint16_toBytes(n uint16) []byte {
+func operand_toBytes(n Operand) []byte {
 	return []byte{byte(n>>8), byte(n)}
 }
 
-func bytes_toUint16(n []byte) (uint16, error) {
+func bytes_toOperand(n []byte) (Operand, error) {
 	if len(n) != 2 {
 		return 0, errors.New("uint16 needs 2 bytes!")
 	}
-	return uint16(n[0]) << 8 + uint16(n[1]), nil;
+	return Operand(n[0]) << 8 + Operand(n[1]), nil;
 }
 
 func CalcRequestFromBytes(in []byte) (*CalculationRequest, error) {
@@ -33,14 +35,14 @@ func CalcRequestFromBytes(in []byte) (*CalculationRequest, error) {
 		return nil, errors.New("Calc request needs 8 bytes!")
 	}
 
-	var op1, op2 uint16
+	var op1, op2 Operand
 	var err error
 
-	if op1, err = bytes_toUint16(in[4:6]); err != nil {
+	if op1, err = bytes_toOperand(in[4:6]); err != nil {
 		return nil, err
 	}
 
-	if op2, err = bytes_toUint16(in[6:8]); err != nil {
+	if op2, err = bytes_toOperand(in[6:8]); err != nil {
 		return nil, err
 	}
 
@@ -60,8 +62,8 @@ func (req *CalculationRequest) ToBytes() []byte {
 	out = append(out, req.RequestID)
 	out = append(out, req.OpCode)
 	out = append(out, req.NumOperands)
-	out = append(out, uint16_toBytes(req.Operand1)...)
-	out = append(out, uint16_toBytes(req.Operand2)...)
+	out = append(out, operand_toBytes(req.Operand1)...)
+	out = append(out, operand_toBytes(req.Operand2)...)
 	log.Trace("Request bytes: %+v", out)
 	return out
 }

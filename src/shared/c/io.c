@@ -12,12 +12,15 @@ void readSanitized(const char *promptString, void *readInto, int numBytes) {
 
   do {
     fputs(promptString, stdout);
-
     valsRead = scanf("%d", &input);  
 
     if (valsRead != 1) {
       perror("invalid input");
+      while (fgetc(stdin) != '\n'){}
+      continue;
     }
+
+    fprintf(stderr, "vals read: %d\n", valsRead);
 
     okSize = true;
 
@@ -26,7 +29,7 @@ void readSanitized(const char *promptString, void *readInto, int numBytes) {
       if (input > 0xff)
       {
         okSize = false;
-        fprintf(stderr, "value must fit in 1 byte");
+        fprintf(stderr, "value must fit in 1 byte\n");
       } else {
         *(unsigned char*)readInto = (unsigned char)input;
       }
@@ -35,9 +38,9 @@ void readSanitized(const char *promptString, void *readInto, int numBytes) {
       if (input > 0xffff)
       {
         okSize = false;
-        fprintf(stderr, "value must fit in 2 bytes");
+        fprintf(stderr, "value must fit in 2 bytes\n");
       } else {
-        *(unsigned short*)readInto = (unsigned short)input;
+        *(operand_t*)readInto = (operand_t)input;
       }
     } else {
       *(unsigned int*)readInto = input;

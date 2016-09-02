@@ -3,6 +3,7 @@ package network
 import (
 	"fmt"
 	"net"
+	"os"
 
 	"shared/go/log"
 )
@@ -28,4 +29,39 @@ func OpenTCPConnection(hostName, hostPort string) (*net.TCPConn, error){
 		}
 	}
 	return nil, fmt.Errorf("Could not find host!")
+}
+
+
+func GetLocalAddress() (net.Addr, error){
+
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, addr := range  addrs {
+			switch addr.(type) {
+			case *net.IPAddr:
+				return addr, nil
+			}
+		}
+	}
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
+	addrs, err := net.LookupHost(hostname)
+	if err != nil {
+		return nil, err
+	}
+
+	return net.ResolveIPAddr("ip", addrs[0])
 }

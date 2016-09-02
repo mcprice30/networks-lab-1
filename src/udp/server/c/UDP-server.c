@@ -87,6 +87,7 @@ int main(void)
 			s, sizeof s));
 	printf("listener: packet is %d bytes long\n", numbytes);
 	buf[numbytes] = '\0';
+
 	printf("listener: packet contains \"%s\"\n", buf);
 
 	close(sockfd);
