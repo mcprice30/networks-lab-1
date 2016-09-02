@@ -20,8 +20,6 @@ void readSanitized(const char *promptString, void *readInto, int numBytes) {
       continue;
     }
 
-    fprintf(stderr, "vals read: %d\n", valsRead);
-
     okSize = true;
 
     if (numBytes == 1)

@@ -6,8 +6,6 @@ import (
 	"shared/go/log"
 )
 
-type Result int32
-type ErrorCode byte
 
 
 const (
@@ -24,26 +22,13 @@ type CalculationResponse struct {
 	Result 	Result 
 }
 
-func result_toBytes(n Result) []byte {
-	return []byte{byte(n>>24), byte(n>>16), byte(n>>8), byte(n)}
-}
-
-func bytes_toResult(n []byte) (Result, error) {
-	if len(n) != 4 {
-		return 0, errors.New("int32 needs 4 bytes!")
-	}
-	return Result(n[0]) << 24 + Result(n[1]) << 16 + Result(n[2]) << 8 + Result(n[3]) , nil;
-}
 
 func CalcResponseFromBytes(in []byte) (*CalculationResponse, error) {
 	if len(in) != 7 {
 		return nil, errors.New("Calc response needs 7 bytes!")
 	}
 
-	result, err := bytes_toResult(in[3:7])
-	if err != nil {
-		return nil, err
-	}
+	result := bytesToResult(in[3:7])
 
 	return &CalculationResponse{
 		TML: TML(in[0]),
@@ -58,7 +43,7 @@ func (resp *CalculationResponse) ToBytes() []byte {
 	out = append(out, byte(resp.TML))
 	out = append(out, byte(resp.RequestID))
 	out = append(out, byte(resp.ErrorCode))
-	out = append(out, result_toBytes(resp.Result)...)
+	out = append(out, resp.Result.toBytes()...)
 	log.Trace("Request bytes: %+v", out)
 	return out
 }
