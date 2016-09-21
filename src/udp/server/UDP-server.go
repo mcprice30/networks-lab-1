@@ -3,24 +3,36 @@ package main
 import (
 		"fmt"
 		"net"
-//		"shared/go/network"
+		"os"
+
 		"shared/go/types"
-//		"shared/go/log"
+		"shared/go/log"
 )
 
 const Port string = "10010"
 
 func main() {
 
-		serverAddr, err := net.ResolveUDPAddr("udp", ":10010")
+		if len(os.Args) != 3 && len(os.Args) != 2 {
+			fmt.Fprintf(os.Stderr, "Usage: %s port [LOGLEVEL]\n", os.Args[0])	
+			os.Exit(1)
+		}
+
+		if len(os.Args) == 3 {
+			if err := log.Level(os.Args[2]); err != nil {
+				log.Fatal("Invalid log level: %s", os.Args[2])
+			}
+		}
+
+		serverAddr, err := net.ResolveUDPAddr("udp", ":" + os.Args[1])
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err.Error())
 			return
 		}
 
 		conn, err := net.ListenUDP("udp", serverAddr)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err.Error())
 			return	
 		}
 
@@ -30,32 +42,32 @@ func main() {
 
 		for {
 			n,addr,err := conn.ReadFromUDP(buf)
-			fmt.Printf("Recieved %+v from %s\n",	buf[0:n], addr)		
+			log.Trace("Recieved %+v from %s\n",	buf[0:n], addr)		
 
 	
 			if err != nil {
-				fmt.Println("Error: ", err)
+				log.Error(err.Error())
 			}	
 
 			request, err := types.CalcRequestFromBytes(buf[0:n])
 			if err != nil {
-				fmt.Println("Error: ", err)
+				log.Error(err.Error())
 			}
 
-			fmt.Println(request)
-			response, _ := DoMath(request)
-			fmt.Println(response.ToBytes())
+			log.Trace("Got request %+v", request)
+			response := DoMath(request)
+			log.Trace("Sending: %s", response.ToBytes())
 
 			if n, err := conn.WriteTo(response.ToBytes(), addr); err != nil {
-				fmt.Println(err)
+				log.Error(err.Error())
 			} else {
-				fmt.Println("Sent ", n, " bytes")
+				log.Info("Sent %d bytes", n)
 			}
 		}
 
 }
 
-func DoMath(req *types.CalculationRequest) (*types.CalculationResponse, error) {
+func DoMath(req *types.CalculationRequest) (*types.CalculationResponse) {
 
 	reqID := req.RequestID
 	op1 := types.Result(req.Operand1)
@@ -63,18 +75,18 @@ func DoMath(req *types.CalculationRequest) (*types.CalculationResponse, error) {
 
 	switch req.OpCode {
 	case 0:
-		return types.BuildResponse(reqID, op1 + op2), nil
+		return types.BuildResponse(reqID, op1 + op2)
 	case 1:
-		return types.BuildResponse(reqID, op1 - op2), nil
+		return types.BuildResponse(reqID, op1 - op2)
 	case 2:
-		return types.BuildResponse(reqID, op1 | op2), nil
+		return types.BuildResponse(reqID, op1 | op2)
 	case 3:
-		return types.BuildResponse(reqID, op1 & op2), nil
+		return types.BuildResponse(reqID, op1 & op2)
 	case 4:
-		return types.BuildResponse(reqID, op1 >> uint32(op2)), nil
+		return types.BuildResponse(reqID, op1 >> uint32(op2))
 	case 5:
-		return types.BuildResponse(reqID, op1 << uint32(op2)), nil
+		return types.BuildResponse(reqID, op1 << uint32(op2))
+	default:
+		return types.ErrResponse(reqID)
 	}
-
-	return nil, nil
 }
