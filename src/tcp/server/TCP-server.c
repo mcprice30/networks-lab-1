@@ -18,8 +18,6 @@
 
 #include "shared/c/types.h"
 
-#define PORT "10021"  // Change this to 10021
-
 #define BACKLOG 10	 // how many pending connections queue will hold
 
 void sigchld_handler(int s)
@@ -42,8 +40,16 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
+
+    if (argc != 2) {
+      fprintf(stderr, "Usage: %s <port>\n", argv[0]);
+      return 1;
+    }
+
+    char* port = argv[1];
+
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	struct addrinfo hints, *servinfo, *p;
 	struct sockaddr_storage their_addr; // connector's address information
@@ -58,7 +64,7 @@ int main(void)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE; // use my IP
 
-	if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(NULL, port, &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
@@ -106,7 +112,7 @@ int main(void)
 		exit(1);
 	}
 
-	printf("server: waiting for connections on port %s...\n", PORT);
+	printf("server: waiting for connections on port %s...\n", port);
 
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
