@@ -6,8 +6,6 @@ import (
 	"shared/go/log"
 )
 
-
-
 const (
 	ErrorCodeError ErrorCode = 127
 	ErrorCodeNoError ErrorCode = 0

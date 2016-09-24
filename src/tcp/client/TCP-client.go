@@ -31,14 +31,34 @@ func main() {
 	}
 
 	reqNum := types.RequestID(0)
+	respBytes := make([]byte, 1000);
 	for {
 		reqBytes := types.BuildRequest(reqNum).ToBytes()
 		reqNum++
 		if n, err := conn.Write(reqBytes); err != nil	{
-			log.Error("Error: %s", err)	
+			log.Error("Error sending request: %s", err)	
 		} else {
 			log.Info("Sent %d bytes", n)
 		}
+
+		if bytesReturned, err := conn.Read(respBytes); err != nil {
+			log.Error("Error getting response: %s", err)
+		} else {
+			log.Info("Recieved %d bytes", bytesReturned)
+			response, err := types.CalcResponseFromBytes(respBytes[:bytesReturned])
+			if err != nil {
+				log.Error("Error converting bytes to a response: %s", err)
+			} else {
+				if response.ErrorCode	!= types.ErrorCodeNoError {
+					fmt.Printf("Could not compute request #%d (Error Code %d)\n",
+						response.RequestID, response.ErrorCode)
+				} else {
+					fmt.Printf("Result for request #%d: %d\n", response.RequestID,
+						response.Result)
+				}
+			}
+		}
+
 	}
 
 } 
