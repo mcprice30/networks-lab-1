@@ -12,6 +12,8 @@ CFLAGS=-Wall -Isrc/
 # Go setup flags
 GO_DOWNLOAD_SRC="https://storage.googleapis.com/golang/go1.7.1.linux-amd64.tar.gz"
 GO_TARBALL=godownload.tar.gz
+GROOT=$(shell pwd)/$(BIN)/go
+export GOROOT:=$(GROOT)
 
 # Go compilation flags.
 SETPATH=GOPATH=$(shell pwd)
