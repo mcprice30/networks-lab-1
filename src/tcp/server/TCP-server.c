@@ -1,5 +1,6 @@
 /*
-** server.c -- a stream socket server demo
+* To run this compile it using cc TCP-server.c -o TCP-server then ./TCP-server
+* TODO: remove print statements before submitting. 
 */
 
 #include <stdio.h>
@@ -15,9 +16,30 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#define PORT "10010"  // the port users will be connecting to
+#include "shared/c/types.h"
+
+#define PORT "10021"  // Change this to 10021
 
 #define BACKLOG 10	 // how many pending connections queue will hold
+
+// The packet recieved from the client
+struct __attribute__((__packed__)) packet {
+		char tml; // Message length in bytes
+		char reqId;	// Request Id
+		char opC; // Opcode 
+		char numOp; // Number of opperands (This doesn't ever get used)
+		unsigned short o1; // Operand 1
+		unsigned short o2; // Operand 2
+} my_packet;
+
+// The packed sent back to the client
+struct __attribute__((__packed__)) returnPacket {
+		char tml; // Message length in bytes
+		char reqId; // Request Id
+		char errorCode; // Error code (0 for no errors, 1 for errors)
+		unsigned int finAnswer; // Returned answer
+} return_packet;
+
 
 void sigchld_handler(int s)
 {
@@ -28,7 +50,6 @@ void sigchld_handler(int s)
 
 	errno = saved_errno;
 }
-
 
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
@@ -119,13 +140,79 @@ int main(void)
 			s, sizeof s);
 		printf("server: got connection from %s\n", s);
 
+		int MAXDATASIZE = 100;
+		char buf[MAXDATASIZE];
+		int numbytes;  
+
+		if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1) {
+	    	perror("recv");
+	    	exit(1);
+		}
+
+        calcrequest_t request = calcrequestFromBytes(buf, numbytes);
+		printf("TML: %02x\n", request.TML);
+		printf("Opcode: %02x\n", request.OpCode);
+		printf("ReqId: %02x\n", request.RequestID);
+		printf("Op 1: %d\n", request.Operand1);
+		printf("Op 2: %d\n", request.Operand2);
+
+		char error = (request.TML == 8 ? 0 : 1);
+ 		unsigned int answer = 0; // The final answer to be returned. 
+
+        switch (request.OpCode) {
+          case 0:
+            answer = request.Operand1 + request.Operand2;
+            break;
+          case 1:
+            answer = request.Operand1 - request.Operand2;
+            break;
+          case 2:
+            answer = request.Operand1 | request.Operand2;
+            break;
+          case 3:
+            answer = request.Operand1 & request.Operand2;
+            break;
+          case 4:
+            answer = request.Operand1 >> request.Operand2;
+            break;
+          case 5:
+            answer = request.Operand1 << request.Operand2;
+            break;
+          default:
+            error = 1;
+        }
+        calcresponse_t response;
+        response.TML = 7;
+        response.ErrorCode = error;
+        response.RequestID = request.RequestID;
+        response.Result = answer;
+
+		printf("TML: %02x\n",response.TML);
+		printf("ReqId: %02x\n",response.RequestID);
+		printf("ErrorCode: %02x\n",response.ErrorCode);
+		printf("Answer: %d\n",response.Result);
+		// The above can be removed in the final version. It is for testing purposes
+        char* responseBytes = malloc(response.TML);
+       
+        if (calcresponseToBytes(response, responseBytes, response.TML)) {
+          perror("convert response to bytes");
+        } 
+        
+        printf("[");
+        int i;
+        for (i = 0; i < response.TML; i++) {
+          printf(" %02x", responseBytes[i]);
+        }
+        printf(" ]\n");
+
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
-			if (send(new_fd, "Hello, world!", 13, 0) == -1)
+			if (send(new_fd, responseBytes, response.TML, 0) == -1)
 				perror("send");
 			close(new_fd);
 			exit(0);
 		}
+
 		close(new_fd);  // parent doesn't need this
 	}
 

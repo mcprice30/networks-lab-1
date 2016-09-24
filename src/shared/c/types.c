@@ -1,4 +1,3 @@
-#include <stdint.h>
 
 #include "shared/c/types.h"
 #include "shared/c/io.h"
@@ -29,6 +28,39 @@ calcrequest_t readCalculatorRequest(unsigned char *reqNum) {
   return request;
 }
 
+calcrequest_t calcrequestFromBytes(char* bytes, int len) {
+
+  calcrequest_t request;
+
+  if (len != 8 && bytes[0] != 8) {
+    return request;
+  }
+
+  request.TML = bytes[0];
+  request.RequestID = bytes[1];
+  request.OpCode = bytes[2];
+  request.NumOperands = bytes[3];
+  request.Operand1 = HANDLE_OPERAND_T(*((operand_t*) &bytes[4]));
+  request.Operand2 = HANDLE_OPERAND_T(*((operand_t*) &bytes[6]));
+
+  return request;
+}
+
+int calcresponseToBytes(calcresponse_t response, char* bytes, int numBytes) {
+
+  calcresponse_t copy; 
+  if (numBytes != 7) {
+    return -1;
+  }
+
+  copy.TML = response.TML;
+  copy.RequestID = response.RequestID;
+  copy.ErrorCode= response.ErrorCode;
+  copy.Result = HANDLE_INT(response.Result);
+
+  memcpy(bytes, &copy, numBytes);
+  return 0;
+}
 
 calcresponse_t calcresponseFromBytes(char* bytes, int len) {
 

@@ -5,12 +5,13 @@
 #include <stdbool.h>
 #include <byteswap.h>
 #include <stdint.h>
+#include <string.h>
 
 #define HANDLE_SHORT(X) isLittleEndian() ? __bswap_16(X) : X 
 #define HANDLE_INT(X) isLittleEndian() ? __bswap_32(X) : X
 #define HANDLE_OPERAND_T(X) HANDLE_SHORT(X)
 
-typedef int16_t operand_t;
+typedef uint16_t operand_t;
 
 struct calcrequest
 {
@@ -36,7 +37,11 @@ typedef struct calcresponse calcresponse_t;
 
 bool isLittleEndian();
 
+calcrequest_t calcrequestFromBytes(char* bytes, int len);
+
 calcrequest_t readCalculatorRequest(unsigned char *reqNum);
+
+int calcresponseToBytes(calcresponse_t response, char* bytes, int numBytes);
 
 calcresponse_t calcresponseFromBytes(char* bytes, int len);
 

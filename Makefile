@@ -34,8 +34,11 @@ shared: src/$(SHARED)/* setup
 	$(CC) $(CFLAGS) -c src/shared/c/types.c -o $(OBJ)/$(SHARED)/types.o; \
 	echo "Done building shared files"
 
-tcp_server: src/tcp/server/* setup
-	@$(CC) $(CFLAGS) src/tcp/server/*.c -o $(BUILD)/TCP_server
+tcp_server_base: src/tcp/server/* setup
+	@$(CC) $(CFLAGS) -c src/tcp/server/*.c -o $(OBJ)/tcp_server.o
+
+tcp_server: shared tcp_server_base setup
+	@$(CC) $(CFLAGS) $(OBJ)/tcp_server.o $(OBJ)/$(SHARED)/*o -o $(BUILD)/TCP_server
 
 tcp_client: src/tcp/client/* setup
 	@$(GO) $(GOFLAGS) -o $(BUILD)/TCP_client tcp/client
