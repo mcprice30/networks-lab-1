@@ -1,8 +1,14 @@
+// Lab 1 - Group 11
+// 
+// The types package contains custom structs for that encapsulate the packets
+// to be sent, including the various fields in said packets.
+//
+// request.go encapsulates request packets, containing various packet fields
+// and various functions for converting it to and from network byte order.
 package types 
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"os"
 	"reflect"
@@ -16,19 +22,21 @@ const (
 	RequestNumOperands NumOperands = 2
 )
 
+// CalculationRequest contains all of the data sent in a request packet.
 type CalculationRequest struct {
-	TML TML
-	RequestID RequestID
-	OpCode OpCode
-	NumOperands NumOperands
-	Operand1 Operand
-	Operand2 Operand
+	TML         TML         // Total Message Length
+	RequestID   RequestID   // Unique for each request of the client.
+	OpCode      OpCode      // Indicates which operation is being requested.
+	NumOperands NumOperands // Will always be 2.
+	Operand1    Operand
+	Operand2    Operand
 }
 
-
+// CalcRequestFromBytes takes a slice of bytes and produces a CalcuationRequest
+// from them.
 func CalcRequestFromBytes(in []byte) (*CalculationRequest, error) {
-	if len(in) != 8 {
-		return nil, errors.New("Calc request needs 8 bytes!")
+	if len(in) != int(RequestTML) {
+		return nil, fmt.Errorf("Calc request needs %d bytes!", int(RequestTML))
 	}
 
 	op1 := bytesToOperand(in[4:6])
@@ -44,6 +52,7 @@ func CalcRequestFromBytes(in []byte) (*CalculationRequest, error) {
 	}, nil
 }
 
+// ToBytes converts a request to a slice of bytes in network byte order.
 func (req *CalculationRequest) ToBytes() []byte {
 	out := make([]byte, 0, int(req.TML))
 	out = append(out, byte(req.TML))
@@ -56,6 +65,7 @@ func (req *CalculationRequest) ToBytes() []byte {
 	return out
 }
 
+// Prompt the user for input and build a calculation request from it.
 func BuildRequest(reqNum RequestID) *CalculationRequest {
 	request := &CalculationRequest{
 		TML: RequestTML,
@@ -70,6 +80,8 @@ func BuildRequest(reqNum RequestID) *CalculationRequest {
 	return request
 }
 
+// Prompt the user for input text and write it into the "readInto" value.
+// Responsible retrying the prompt until a valid input is provided.
 func ReadInput(prompt string, readInto interface{}) {
 
 	satisfied := false

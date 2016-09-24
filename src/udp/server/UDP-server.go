@@ -74,17 +74,17 @@ func DoMath(req *types.CalculationRequest) (*types.CalculationResponse) {
 	op2 := types.Result(req.Operand2)
 
 	switch req.OpCode {
-	case 0:
+	case types.OpCodeAdd:
 		return types.BuildResponse(reqID, op1 + op2)
-	case 1:
+	case types.OpCodeSub:
 		return types.BuildResponse(reqID, op1 - op2)
-	case 2:
+	case types.OpCodeOr:
 		return types.BuildResponse(reqID, op1 | op2)
-	case 3:
+	case types.OpCodeAnd:
 		return types.BuildResponse(reqID, op1 & op2)
-	case 4:
+	case types.OpCodeRShift:
 		return types.BuildResponse(reqID, op1 >> uint32(op2))
-	case 5:
+	case types.OpCodeLShift:
 		return types.BuildResponse(reqID, op1 << uint32(op2))
 	default:
 		return types.ErrResponse(reqID)
