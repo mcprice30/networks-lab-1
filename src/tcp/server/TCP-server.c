@@ -22,25 +22,6 @@
 
 #define BACKLOG 10	 // how many pending connections queue will hold
 
-// The packet recieved from the client
-struct __attribute__((__packed__)) packet {
-		char tml; // Message length in bytes
-		char reqId;	// Request Id
-		char opC; // Opcode 
-		char numOp; // Number of opperands (This doesn't ever get used)
-		unsigned short o1; // Operand 1
-		unsigned short o2; // Operand 2
-} my_packet;
-
-// The packed sent back to the client
-struct __attribute__((__packed__)) returnPacket {
-		char tml; // Message length in bytes
-		char reqId; // Request Id
-		char errorCode; // Error code (0 for no errors, 1 for errors)
-		unsigned int finAnswer; // Returned answer
-} return_packet;
-
-
 void sigchld_handler(int s)
 {
 	// waitpid() might overwrite errno, so we save and restore it:
@@ -125,7 +106,7 @@ int main(void)
 		exit(1);
 	}
 
-	printf("server: waiting for connections...\n");
+	printf("server: waiting for connections on port %s...\n", PORT);
 
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
@@ -191,14 +172,13 @@ int main(void)
 		printf("ReqId: %02x\n",response.RequestID);
 		printf("ErrorCode: %02x\n",response.ErrorCode);
 		printf("Answer: %d\n",response.Result);
-		// The above can be removed in the final version. It is for testing purposes
         char* responseBytes = malloc(response.TML);
        
         if (calcresponseToBytes(response, responseBytes, response.TML)) {
           perror("convert response to bytes");
         } 
         
-        printf("[");
+        printf("Replying with: [");
         int i;
         for (i = 0; i < response.TML; i++) {
           printf(" %02x", responseBytes[i]);
